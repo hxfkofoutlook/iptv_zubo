@@ -1,7 +1,22 @@
 {
-  "update_time": "2026-02-06 17:49:18",
-  "update_timestamp": 1770400158,
-  "total_sources": 0,
-  "total_streams": 0,
-  "sources": {}
+  "update_time": "2026-02-06 18:13:10",
+  "update_timestamp": 1770401590,
+  "total_sources": 1,
+  "total_streams": 2,
+  "sources": {
+    "广东电信": [
+      {
+        "ip": "116.205.183.226:6009",
+        "multicast": "239.77.0.112:5146",
+        "speed_kbps": 11.45,
+        "latency_ms": 2548.99
+      },
+      {
+        "ip": "113.45.5.141:6007",
+        "multicast": "239.77.0.112:5146",
+        "speed_kbps": 11.43,
+        "latency_ms": 2560.66
+      }
+    ]
+  }
 }
