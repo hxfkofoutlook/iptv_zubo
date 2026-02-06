@@ -2,9 +2,8 @@ name: IPTV源自动检测与更新
 
 on:
   schedule:
-    # 每天UTC时间2点运行 (北京时间10点)
     - cron: '0 2 * * *'
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -15,10 +14,15 @@ jobs:
   check-iptv:
     runs-on: ubuntu-latest
     
+    # 添加权限设置
+    permissions:
+      contents: write  # 授予写入权限
+    
     steps:
     - name: 检出代码
       uses: actions/checkout@v3
       with:
+        # 使用 GitHub Token（默认已提供）
         token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: 设置Python环境
