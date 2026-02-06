@@ -87,17 +87,29 @@ def is_target_match(filename: str, province: str, isp: str) -> bool:
     return province_in_name and isp_in_name
 
 def extract_ips_from_url(download_url: str) -> Set[str]:
-    """从下载链接提取IP:端口"""
+    """从下载链接提取IP:端口，如果超过10个，只取最后10个"""
     ips = set()
     try:
         resp = requests.get(download_url, timeout=REQUEST_TIMEOUT)
         if resp.status_code == 200:
             lines = resp.text.split('\n')
+            valid_ips = []
+            
+            # 收集所有有效的IP
             for line in lines:
                 line = line.strip()
                 if line and not line.startswith('#'):
                     if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$', line):
-                        ips.add(line)
+                        valid_ips.append(line)
+            
+            # 如果IP数量大于10，只取最后10个
+            if len(valid_ips) > 10:
+                valid_ips = valid_ips[-10:]
+                print(f"    (从 {len(valid_ips)} 个IP中取了最后10个)")
+            
+            # 添加到集合中（自动去重）
+            ips.update(valid_ips)
+            
     except Exception as e:
         print(f"    下载失败: {e}")
     
