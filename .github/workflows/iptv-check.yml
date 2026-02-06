@@ -1,0 +1,48 @@
+name: IPTV源自动检测与更新
+
+on:
+  schedule:
+    # 每天UTC时间2点运行 (北京时间10点)
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # 允许手动触发
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/iptv_checker.py'
+      - '.github/workflows/iptv-check.yml'
+
+jobs:
+  check-iptv:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 设置Python环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: 安装依赖
+      run: pip install requests
+    
+    - name: 运行IPTV检测脚本
+      run: python scripts/iptv_checker.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 检查并提交更新
+      run: |
+        if [[ -n $(git status --porcelain iptv.json) ]]; then
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add iptv.json
+          git commit -m "🤖 自动更新IPTV源 $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+          echo "✅ iptv.json已更新并提交"
+        else
+          echo "📭 iptv.json无变化，无需提交"
+        fi
