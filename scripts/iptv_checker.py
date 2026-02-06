@@ -8,6 +8,7 @@ import re
 import json
 import time
 import requests
+import subprocess
 import concurrent.futures
 from datetime import datetime
 from collections import defaultdict
@@ -116,59 +117,43 @@ def extract_ips_from_url(download_url: str) -> Set[str]:
     return ips
 
 # ===============================
-# 测速函数
+# 测速函数 - 修改为第一个脚本的逻辑
 # ===============================
 
-def check_connectivity(ip_port: str) -> tuple:
-    """检查IP:PORT是否可达"""
-    test_url = f"http://{ip_port}/"
-    
+def check_stream(url: str, timeout: int = 5) -> bool:
+    """检查流是否可播放，使用ffprobe检测（第一个脚本的逻辑）"""
     try:
-        start_time = time.time()
-        response = requests.head(test_url, timeout=3, allow_redirects=True)
-        latency = time.time() - start_time
-        
-        if response.status_code < 500:
-            return True, latency
-        else:
-            return False, latency
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_streams", "-i", url],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout + 2
+        )
+        return b"codec_type" in result.stdout
     except Exception:
-        return False, None
+        return False
 
-def test_stream_speed(ip_port: str, multicast_addr: str) -> Optional[Dict]:
-    """测试流媒体速度"""
+def test_stream_playable(ip_port: str, multicast_addr: str) -> Optional[Dict]:
+    """测试流媒体是否可播放（使用第一个脚本的逻辑）"""
     test_url = f"http://{ip_port}/rtp/{multicast_addr}"
     
     try:
         start_time = time.time()
-        total_bytes = 0
-        max_bytes = 32768
         
-        with requests.get(test_url, stream=True, timeout=TEST_TIMEOUT) as response:
-            if response.status_code >= 400:
-                return None
-            
-            chunk_size = 8192
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                if not chunk:
-                    break
-                total_bytes += len(chunk)
-                if total_bytes >= max_bytes:
-                    break
+        # 使用第一个脚本的ffprobe检测逻辑
+        is_playable = check_stream(test_url, timeout=TEST_TIMEOUT)
         
         download_time = time.time() - start_time
         
-        if download_time == 0 or total_bytes == 0:
+        if is_playable:
+            return {
+                'ip_port': ip_port,
+                'playable': True,
+                'latency_ms': round(download_time * 1000, 2),
+                'test_url': test_url
+            }
+        else:
             return None
-        
-        speed_kbps = (total_bytes / 1024) / download_time
-        
-        return {
-            'ip_port': ip_port,
-            'speed_kbps': round(speed_kbps, 2),
-            'download_time': round(download_time, 2),
-            'test_url': test_url
-        }
     except Exception:
         return None
 
@@ -177,56 +162,33 @@ def complete_speed_test_workflow(ip_list: List[str], multicast_addr: str) -> Lis
     if not ip_list:
         return []
     
-    # 步骤1: 连通性检查
-    print(f"    连通性检查: {len(ip_list)}个IP")
-    reachable_ips = []
-    
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_ip = {executor.submit(check_connectivity, ip): ip for ip in ip_list}
-        
-        for future in concurrent.futures.as_completed(future_to_ip):
-            ip = future_to_ip[future]
-            is_connected, latency = future.result()
-            if is_connected:
-                reachable_ips.append((ip, latency))
-    
-    print(f"    可达IP: {len(reachable_ips)}个")
-    
-    if not reachable_ips:
-        return []
-    
-    # 步骤2: 速度测试
-    print(f"    速度测试: {len(reachable_ips)}个IP")
-    speed_results = []
+    # 直接使用ffprobe检测流是否可播放（第一个脚本的逻辑）
+    print(f"    可播放性测试: {len(ip_list)}个IP")
+    playable_results = []
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         future_to_ip = {
-            executor.submit(test_stream_speed, ip, multicast_addr): (ip, latency) 
-            for ip, latency in reachable_ips[:50]  # 限制测试数量
+            executor.submit(test_stream_playable, ip, multicast_addr): ip 
+            for ip in ip_list[:50]  # 限制测试数量
         }
         
         completed = 0
         for future in concurrent.futures.as_completed(future_to_ip):
             completed += 1
-            ip, latency = future_to_ip[future]
+            ip = future_to_ip[future]
             result = future.result()
             
             if completed % 10 == 0 or completed == len(future_to_ip):
                 print(f"      进度: {completed}/{len(future_to_ip)}")
             
             if result:
-                # 合并结果
-                merged_result = {
-                    'ip_port': ip,
-                    'speed_kbps': result['speed_kbps'],
-                    'latency_ms': round(latency * 1000, 2) if latency else 0,
-                    'test_url': result['test_url']
-                }
-                speed_results.append(merged_result)
+                playable_results.append(result)
     
-    # 按速度排序
-    speed_results.sort(key=lambda x: x['speed_kbps'], reverse=True)
-    return speed_results
+    print(f"    可播放IP数量: {len(playable_results)}个")
+    
+    # 按延迟排序（延迟越低越好）
+    playable_results.sort(key=lambda x: x['latency_ms'])
+    return playable_results
 
 def save_results(results: Dict):
     """保存结果到JSON文件"""
@@ -242,7 +204,7 @@ def save_results(results: Dict):
         json.dump(output_data, f, ensure_ascii=False, indent=2)
     
     print(f"🎉 结果已保存到 {OUTPUT_FILE}")
-    print(f"   总计: {output_data['total_streams']} 个高速IPTV源")
+    print(f"   总计: {output_data['total_streams']} 个可播放的IPTV源")
 
 def main():
     print("🚀 IPTV源检测流程开始")
@@ -283,7 +245,7 @@ def main():
         print(f"   {province}{isp}: {len(ips)} 个IP")
     
     # 步骤2: 对每个组合进行测试
-    print("\n🧪 开始IP连通性和速度测试...")
+    print("\n🧪 开始IP可播放性测试...")
     final_results = {}
     
     for (province, isp), ip_set in ip_collections.items():
@@ -298,27 +260,26 @@ def main():
         if not ip_list:
             continue
         
-        speed_results = complete_speed_test_workflow(ip_list, multicast)
+        playable_results = complete_speed_test_workflow(ip_list, multicast)
         
-        if speed_results:
-            top_2 = speed_results[:2]
+        if playable_results:
+            top_2 = playable_results[:2]
             
             # 修正输出格式：分开存储ip和组播地址
             final_results[f"{province}{isp}"] = [
                 {
                     "ip": item['ip_port'],  # 存储ip:port
                     "multicast": multicast,  # 存储组播地址
-                    "speed_kbps": item['speed_kbps'],
                     "latency_ms": item['latency_ms']
                 }
                 for item in top_2
             ]
             
-            print(f"    ✅ 找到 {len(top_2)} 个高速源")
+            print(f"    ✅ 找到 {len(top_2)} 个可播放源")
             for i, item in enumerate(top_2, 1):
-                print(f"      第{i}名: {item['speed_kbps']} KB/s, 延迟: {item['latency_ms']}ms")
+                print(f"      第{i}名: 延迟 {item['latency_ms']}ms")
         else:
-            print(f"    ❌ 没有可用的IP")
+            print(f"    ❌ 没有可播放的IP")
     
     # 步骤3: 保存结果
     save_results(final_results)
