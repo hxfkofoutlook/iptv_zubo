@@ -2,7 +2,8 @@ name: IPTV源自动检测与更新
 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    # UTC时间22:00 = 北京时间第二天06:00
+    - cron: '0 22 * * *'
   workflow_dispatch:
   
 jobs:
