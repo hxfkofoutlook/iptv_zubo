@@ -9,6 +9,7 @@ import json
 import time
 import requests
 import concurrent.futures
+import subprocess
 from datetime import datetime
 from collections import defaultdict
 from typing import Dict, List, Set, Optional
@@ -46,9 +47,10 @@ REPOS = [
 
 # 测试配置
 REQUEST_TIMEOUT = 10
-TEST_TIMEOUT = 20
-MAX_WORKERS = 10
-MAX_IPS_PER_TARGET = 500
+PING_TIMEOUT = 2  # ping连通性检查超时时间（秒）
+SPEED_TEST_DURATION = 20  # 测速持续时间（秒）
+MAX_WORKERS = 10  # 减少并发数，因为测速时间长
+MAX_IPS_PER_TARGET = 500  # 减少测试IP数量，因为每个测速1分钟
 OUTPUT_FILE = "iptv.json"
 
 # ===============================
@@ -101,60 +103,130 @@ def extract_ips_from_url(download_url: str) -> Set[str]:
     return ips
 
 # ===============================
-# 测速函数
+# 测速函数（修改版）
 # ===============================
 
-def check_connectivity(ip_port: str) -> tuple:
-    """检查IP:PORT是否可达"""
-    test_url = f"http://{ip_port}/"
-    
+def check_ip_ping(ip: str) -> bool:
+    """
+    使用ping命令检查IP是否可达
+    只检查IP，不检查端口，超时2秒
+    """
     try:
-        start_time = time.time()
-        response = requests.head(test_url, timeout=3, allow_redirects=True)
-        latency = time.time() - start_time
+        # 提取IP（去掉端口部分）
+        ip_address = ip.split(':')[0]
         
-        if response.status_code < 500:
-            return True, latency
-        else:
-            return False, latency
-    except Exception:
-        return False, None
+        # 使用ping命令检查IP连通性
+        # -c 1: 发送1个包
+        # -W 2: 等待2秒
+        result = subprocess.run(
+            ['ping', '-c', '1', '-W', str(PING_TIMEOUT), ip_address],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=PING_TIMEOUT + 1  # 比ping超时多1秒
+        )
+        
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, Exception) as e:
+        return False
 
-def test_stream_speed(ip_port: str, multicast_addr: str) -> Optional[Dict]:
-    """测试流媒体速度"""
+def batch_ping_check(ip_list: List[str]) -> List[str]:
+    """批量ping检查，返回可达的IP列表"""
+    print(f"    Ping检查: {len(ip_list)}个IP")
+    
+    reachable_ips = []
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_ip = {
+            executor.submit(check_ip_ping, ip): ip 
+            for ip in ip_list
+        }
+        
+        completed = 0
+        for future in concurrent.futures.as_completed(future_to_ip):
+            completed += 1
+            ip = future_to_ip[future]
+            
+            if completed % 10 == 0 or completed == len(ip_list):
+                print(f"      进度: {completed}/{len(ip_list)}")
+            
+            if future.result():
+                reachable_ips.append(ip)
+    
+    print(f"    Ping检查完成: {len(reachable_ips)}/{len(ip_list)} 个IP可达")
+    return reachable_ips
+
+def test_stream_speed_one_minute(ip_port: str, multicast_addr: str) -> Optional[Dict]:
+    """
+    测试流媒体速度，持续1分钟
+    返回下载数据量和平均速度
+    """
     test_url = f"http://{ip_port}/rtp/{multicast_addr}"
     
     try:
-        start_time = time.time()
         total_bytes = 0
-        max_bytes = 32768
+        start_time = time.time()
+        end_time = start_time + SPEED_TEST_DURATION
         
-        with requests.get(test_url, stream=True, timeout=TEST_TIMEOUT) as response:
+        print(f"    测速 {ip_port}:", end=" ")
+        
+        # 设置较长的超时时间
+        with requests.get(
+            test_url,
+            stream=True,
+            timeout=SPEED_TEST_DURATION + 10
+        ) as response:
             if response.status_code >= 400:
+                print("HTTP错误")
                 return None
             
-            chunk_size = 8192
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                if not chunk:
-                    break
-                total_bytes += len(chunk)
-                if total_bytes >= max_bytes:
-                    break
+            # 持续下载直到时间结束
+            chunk_size = 16384  # 16KB块，减少循环次数
+            
+            try:
+                while time.time() < end_time:
+                    # 设置读取超时，避免卡住
+                    response.raw.sock.settimeout(5.0)
+                    
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        if not chunk:
+                            break
+                        
+                        total_bytes += len(chunk)
+                        
+                        # 检查是否达到结束时间
+                        if time.time() >= end_time:
+                            break
+                        
+                        # 每下载1MB输出一次进度
+                        if total_bytes % (1024*1024) == 0:
+                            elapsed = time.time() - start_time
+                            speed = total_bytes / elapsed / 1024 if elapsed > 0 else 0
+                            print(f"{total_bytes/1024/1024:.1f}MB({speed:.1f}KB/s)", end=" ")
+            except (requests.exceptions.Timeout, requests.exceptions.ChunkedEncodingError):
+                # 超时或连接中断是正常的
+                pass
         
-        download_time = time.time() - start_time
+        actual_duration = time.time() - start_time
         
-        if download_time == 0 or total_bytes == 0:
+        if actual_duration < 10:  # 至少测试10秒才认为有效
+            print("测试时间不足")
             return None
         
-        speed_kbps = (total_bytes / 1024) / download_time
+        # 计算平均速度
+        avg_speed_kbps = (total_bytes / 1024) / actual_duration
+        
+        print(f"完成: {total_bytes/1024:.0f}KB/{actual_duration:.0f}s = {avg_speed_kbps:.1f}KB/s")
         
         return {
             'ip_port': ip_port,
-            'speed_kbps': round(speed_kbps, 2),
-            'download_time': round(download_time, 2),
+            'total_bytes': total_bytes,
+            'avg_speed_kbps': round(avg_speed_kbps, 2),
+            'duration_sec': round(actual_duration, 2),
             'test_url': test_url
         }
-    except Exception:
+        
+    except Exception as e:
+        print(f"错误: {str(e)[:30]}")
         return None
 
 def complete_speed_test_workflow(ip_list: List[str], multicast_addr: str) -> List[Dict]:
@@ -162,55 +234,45 @@ def complete_speed_test_workflow(ip_list: List[str], multicast_addr: str) -> Lis
     if not ip_list:
         return []
     
-    # 步骤1: 连通性检查
-    print(f"    连通性检查: {len(ip_list)}个IP")
-    reachable_ips = []
+    # 限制测试数量
+    test_ips = ip_list[:MAX_IPS_PER_TARGET]
     
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_ip = {executor.submit(check_connectivity, ip): ip for ip in ip_list}
-        
-        for future in concurrent.futures.as_completed(future_to_ip):
-            ip = future_to_ip[future]
-            is_connected, latency = future.result()
-            if is_connected:
-                reachable_ips.append((ip, latency))
-    
-    print(f"    可达IP: {len(reachable_ips)}个")
+    # 步骤1: ping连通性检查
+    reachable_ips = batch_ping_check(test_ips)
     
     if not reachable_ips:
         return []
     
-    # 步骤2: 速度测试
-    print(f"    速度测试: {len(reachable_ips)}个IP")
+    # 步骤2: 1分钟测速
+    print(f"    1分钟测速开始: {len(reachable_ips)}个IP")
     speed_results = []
+    start_time = time.time()
     
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_ip = {
-            executor.submit(test_stream_speed, ip, multicast_addr): (ip, latency) 
-            for ip, latency in reachable_ips[:50]  # 限制测试数量
+            executor.submit(test_stream_speed_one_minute, ip, multicast_addr): ip 
+            for ip in reachable_ips
         }
         
         completed = 0
         for future in concurrent.futures.as_completed(future_to_ip):
             completed += 1
-            ip, latency = future_to_ip[future]
+            
+            # 显示进度和预估剩余时间
+            elapsed = time.time() - start_time
+            avg_time_per_ip = elapsed / completed if completed > 0 else SPEED_TEST_DURATION
+            remaining = avg_time_per_ip * (len(reachable_ips) - completed)
+            
+            print(f"      测速进度: {completed}/{len(reachable_ips)}，预估剩余: {remaining/60:.1f}分钟")
+            
             result = future.result()
-            
-            if completed % 10 == 0 or completed == len(future_to_ip):
-                print(f"      进度: {completed}/{len(future_to_ip)}")
-            
             if result:
-                # 合并结果
-                merged_result = {
-                    'ip_port': ip,
-                    'speed_kbps': result['speed_kbps'],
-                    'latency_ms': round(latency * 1000, 2) if latency else 0,
-                    'test_url': result['test_url']
-                }
-                speed_results.append(merged_result)
+                speed_results.append(result)
     
-    # 按速度排序
-    speed_results.sort(key=lambda x: x['speed_kbps'], reverse=True)
+    # 按总下载数据量排序（数据量越大，速度越快越稳定）
+    speed_results.sort(key=lambda x: x['total_bytes'], reverse=True)
+    
+    print(f"    测速完成，找到 {len(speed_results)} 个可用IP")
     return speed_results
 
 def save_results(results: Dict):
@@ -283,9 +345,11 @@ def main():
         if not ip_list:
             continue
         
+        # 使用新的测速流程
         speed_results = complete_speed_test_workflow(ip_list, multicast)
         
         if speed_results:
+            # 取下载数据量最大的2个IP
             top_2 = speed_results[:2]
             
             # 修正输出格式：分开存储ip和组播地址
@@ -293,15 +357,16 @@ def main():
                 {
                     "ip": item['ip_port'],  # 存储ip:port
                     "multicast": multicast,  # 存储组播地址
-                    "speed_kbps": item['speed_kbps'],
-                    "latency_ms": item['latency_ms']
+                    "total_bytes": item['total_bytes'],
+                    "avg_speed_kbps": item['avg_speed_kbps'],
+                    "duration_sec": item['duration_sec']
                 }
                 for item in top_2
             ]
             
             print(f"    ✅ 找到 {len(top_2)} 个高速源")
             for i, item in enumerate(top_2, 1):
-                print(f"      第{i}名: {item['speed_kbps']} KB/s, 延迟: {item['latency_ms']}ms")
+                print(f"      第{i}名: {item['total_bytes']/1024:.1f}KB, {item['avg_speed_kbps']} KB/s")
         else:
             print(f"    ❌ 没有可用的IP")
     
