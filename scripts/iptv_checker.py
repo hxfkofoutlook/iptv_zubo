@@ -103,10 +103,11 @@ def extract_ips_from_url(download_url: str) -> Set[str]:
                     if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$', line):
                         valid_ips.append(line)
             
-            # 如果IP数量大于10，只取最后10个
+            # 检查IP数量并处理
             if len(valid_ips) > 10:
-                valid_ips = valid_ips[-10:]
                 print(f"    (从 {len(valid_ips)} 个IP中取了最后10个)")
+                valid_ips = valid_ips[-10:]  # 只取最后10个
+            # 如果正好10个或更少，不显示提示
             
             # 添加到集合中（自动去重）
             ips.update(valid_ips)
