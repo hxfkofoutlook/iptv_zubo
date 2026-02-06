@@ -46,6 +46,9 @@ REPOS = [
     "moonkeyhoo/zubo",
     "QQ1000COM/zubo",
     "us8888/zubo",
+    "UserLinYa/zubo",
+    "wangxiaobo23/newzubo",
+    "zhaochunen/zubo",
 ]
 
 # 测试配置
