@@ -1,36 +1,7 @@
 {
-  "update_time": "2026-02-06 17:37:38",
-  "update_timestamp": 1770399458,
-  "total_sources": 2,
-  "total_streams": 4,
-  "sources": {
-    "上海电信": [
-      {
-        "ip": "60.204.136.158:7547",
-        "multicast": "233.18.204.51:5140",
-        "speed_kbps": 12.38,
-        "latency_ms": 2386.78
-      },
-      {
-        "ip": "121.37.187.105:7007",
-        "multicast": "233.18.204.51:5140",
-        "speed_kbps": 12.36,
-        "latency_ms": 2424.65
-      }
-    ],
-    "广东电信": [
-      {
-        "ip": "113.45.229.192:8089",
-        "multicast": "239.77.0.112:5146",
-        "speed_kbps": 12.09,
-        "latency_ms": 2473.68
-      },
-      {
-        "ip": "113.45.30.14:18081",
-        "multicast": "239.77.0.112:5146",
-        "speed_kbps": 12.06,
-        "latency_ms": 2444.2
-      }
-    ]
-  }
+  "update_time": "2026-02-06 17:49:18",
+  "update_timestamp": 1770400158,
+  "total_sources": 0,
+  "total_streams": 0,
+  "sources": {}
 }
