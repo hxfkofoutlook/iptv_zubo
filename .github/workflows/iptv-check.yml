@@ -4,12 +4,7 @@ on:
   schedule:
     - cron: '0 2 * * *'
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/iptv_checker.py'
-      - '.github/workflows/iptv-check.yml'
-
+  
 jobs:
   check-iptv:
     runs-on: ubuntu-latest
