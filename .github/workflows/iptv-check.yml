@@ -25,7 +25,10 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: 安装依赖
+    - name: 安装ffmpeg
+      run: sudo apt-get update && sudo apt-get install -y ffmpeg
+    
+    - name: 安装Python依赖
       run: pip install requests
     
     - name: 运行IPTV检测脚本
