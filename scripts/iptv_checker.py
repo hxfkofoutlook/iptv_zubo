@@ -231,7 +231,7 @@ def main():
         for file_info in txt_files:
             filename = file_info['name']
             
-            for province, isp, _ in TARGETS:
+            for province, isp, _, _ in TARGETS:
                 if is_target_match(filename, province, isp):
                     print(f"  ✅ 匹配到: {filename} -> {province}{isp}")
                     
@@ -253,13 +253,15 @@ def main():
     final_results = {}
     
     for (province, isp), ip_set in ip_collections.items():
-        multicast = next((addr for p, i, addr in TARGETS if p == province and i == isp), None)
-        if not multicast:
-            print(f"  警告: 未找到 {province}{isp} 的组播地址，跳过")
+        # 查找对应的组播地址和英文简称
+        target_info = next((addr, code for p, i, addr, code in TARGETS if p == province and i == isp), None)
+        if not target_info:
+            print(f"  警告: 未找到 {province}{isp} 的配置，跳过")
             continue
         
+        multicast, code = target_info
         ip_list = list(ip_set)
-        print(f"\n  处理 {province}{isp}: {len(ip_list)}个IP")
+        print(f"\n  处理 {province}{isp} ({code}): {len(ip_list)}个IP")
         
         if not ip_list:
             continue
@@ -269,8 +271,8 @@ def main():
         if playable_results:
             top_2 = playable_results[:2]
             
-            # 修正输出格式：分开存储ip和组播地址
-            final_results[f"{province}{isp}"] = [
+            # 使用英文简称作为键
+            final_results[code] = [
                 {
                     "ip": item['ip_port'],  # 存储ip:port
                     "multicast": multicast,  # 存储组播地址
