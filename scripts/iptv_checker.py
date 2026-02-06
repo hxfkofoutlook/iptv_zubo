@@ -91,7 +91,7 @@ def is_target_match(filename: str, province: str, isp: str) -> bool:
     return province_in_name and isp_in_name
 
 def extract_ips_from_url(download_url: str) -> Set[str]:
-    """从下载链接提取IP:端口，如果超过10个，只取最后10个"""
+    """从下载链接提取IP:端口，如果超过20个，只取最后20个"""
     ips = set()
     try:
         resp = requests.get(download_url, timeout=REQUEST_TIMEOUT)
@@ -107,10 +107,10 @@ def extract_ips_from_url(download_url: str) -> Set[str]:
                         valid_ips.append(line)
             
             # 检查IP数量并处理
-            if len(valid_ips) > 10:
-                print(f"    (从 {len(valid_ips)} 个IP中取了最后10个)")
-                valid_ips = valid_ips[-10:]  # 只取最后10个
-            # 如果正好10个或更少，不显示提示
+            if len(valid_ips) > 20:
+                print(f"    (从 {len(valid_ips)} 个IP中取了最后20个)")
+                valid_ips = valid_ips[-20:]  # 只取最后20个
+            # 如果正好20个或更少，不显示提示
             
             # 添加到集合中（自动去重）
             ips.update(valid_ips)
