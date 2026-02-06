@@ -254,7 +254,7 @@ def main():
     
     for (province, isp), ip_set in ip_collections.items():
         # 查找对应的组播地址和英文简称
-        target_info = next((addr, code for p, i, addr, code in TARGETS if p == province and i == isp), None)
+        target_info = next(((addr, code) for p, i, addr, code in TARGETS if p == province and i == isp), None)
         if not target_info:
             print(f"  警告: 未找到 {province}{isp} 的配置，跳过")
             continue
