@@ -1,71 +1,57 @@
 {
-  "update_time": "2026-04-01 22:44:13",
-  "update_timestamp": 1775083453,
-  "total_sources": 7,
-  "total_streams": 10,
+  "update_time": "2026-04-02 22:39:02",
+  "update_timestamp": 1775169542,
+  "total_sources": 5,
+  "total_streams": 8,
   "sources": {
     "shctcc": [
       {
         "ip": "124.78.12.70:8686",
         "multicast": "233.18.204.51:5140",
-        "latency_ms": 6472.82
+        "latency_ms": 2861.18
       }
     ],
     "bjctcc": [
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5873.64
+        "latency_ms": 5686.14
       },
       {
         "ip": "115.171.216.84:4000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 6338.81
+        "latency_ms": 6257.55
       }
     ],
     "bjcucc": [
       {
-        "ip": "114.243.168.34:8888",
+        "ip": "114.243.96.9:8888",
         "multicast": "239.3.1.238:8001",
-        "latency_ms": 6016.35
+        "latency_ms": 813.75
       },
       {
-        "ip": "123.122.37.230:4021",
+        "ip": "111.193.235.246:8888",
         "multicast": "239.3.1.238:8001",
-        "latency_ms": 6253.98
-      }
-    ],
-    "scctcc": [
-      {
-        "ip": "171.213.243.209:8096",
-        "multicast": "239.94.0.60:5140",
-        "latency_ms": 6635.43
+        "latency_ms": 1800.58
       }
     ],
     "gdctcc": [
       {
-        "ip": "113.101.244.48:10000",
-        "multicast": "239.77.0.84:5146",
-        "latency_ms": 1240.35
-      },
-      {
         "ip": "113.95.132.166:554",
         "multicast": "239.77.0.84:5146",
-        "latency_ms": 6016.64
+        "latency_ms": 2026.98
+      },
+      {
+        "ip": "183.52.221.186:4000",
+        "multicast": "239.77.0.84:5146",
+        "latency_ms": 5850.26
       }
     ],
     "hnctcc": [
       {
         "ip": "58.46.202.137:4023",
         "multicast": "239.76.253.100:9000",
-        "latency_ms": 8548.21
-      }
-    ],
-    "cqctcc": [
-      {
-        "ip": "125.86.31.156:8003",
-        "multicast": "235.254.197.237:7980",
-        "latency_ms": 6124.85
+        "latency_ms": 1744.38
       }
     ]
   }
