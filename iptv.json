@@ -1,69 +1,64 @@
 {
-  "update_time": "2026-04-07 22:44:08",
-  "update_timestamp": 1775601848,
+  "update_time": "2026-04-08 22:45:08",
+  "update_timestamp": 1775688308,
   "total_sources": 6,
-  "total_streams": 10,
+  "total_streams": 9,
   "sources": {
     "shctcc": [
       {
         "ip": "116.237.61.115:4022",
         "multicast": "233.18.204.51:5140",
-        "latency_ms": 1428.22
+        "latency_ms": 2230.12
       }
     ],
     "bjctcc": [
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5733.93
+        "latency_ms": 6015.09
       },
       {
         "ip": "43.138.5.183:10001",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5741.64
+        "latency_ms": 6316.51
       }
     ],
     "bjcucc": [
       {
-        "ip": "114.243.168.34:8888",
+        "ip": "123.122.37.230:4021",
         "multicast": "239.3.1.238:8001",
-        "latency_ms": 5786.94
+        "latency_ms": 6659.23
       },
       {
         "ip": "111.193.235.246:8888",
         "multicast": "239.3.1.238:8001",
-        "latency_ms": 5986.52
+        "latency_ms": 6897.27
       }
     ],
     "scctcc": [
       {
-        "ip": "171.213.243.209:8096",
-        "multicast": "239.94.0.60:5140",
-        "latency_ms": 6169.11
-      },
-      {
         "ip": "182.135.34.97:888",
         "multicast": "239.94.0.60:5140",
-        "latency_ms": 6431.3
+        "latency_ms": 2261.52
       }
     ],
     "gdctcc": [
       {
-        "ip": "113.45.38.169:9006",
+        "ip": "113.66.41.200:10000",
         "multicast": "239.77.0.84:5146",
-        "latency_ms": 2414.9
+        "latency_ms": 1042.0
       },
       {
         "ip": "183.52.221.186:4000",
         "multicast": "239.77.0.84:5146",
-        "latency_ms": 5781.7
+        "latency_ms": 6800.77
       }
     ],
     "hnctcc": [
       {
         "ip": "58.46.202.137:4023",
         "multicast": "239.76.253.100:9000",
-        "latency_ms": 6039.6
+        "latency_ms": 7409.0
       }
     ]
   }
