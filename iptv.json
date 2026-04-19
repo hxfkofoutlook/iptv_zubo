@@ -1,52 +1,45 @@
 {
-  "update_time": "2026-04-18 22:40:50",
-  "update_timestamp": 1776552050,
-  "total_sources": 5,
-  "total_streams": 7,
+  "update_time": "2026-04-19 22:42:06",
+  "update_timestamp": 1776638526,
+  "total_sources": 4,
+  "total_streams": 6,
   "sources": {
     "shctcc": [
       {
-        "ip": "115.175.39.151:1000",
-        "multicast": "233.18.204.51:5140",
-        "latency_ms": 3089.69
-      },
-      {
         "ip": "180.173.121.65:9999",
         "multicast": "233.18.204.51:5140",
-        "latency_ms": 6873.54
+        "latency_ms": 7775.5
       }
     ],
     "bjctcc": [
       {
         "ip": "43.138.5.183:10001",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5693.89
+        "latency_ms": 5622.54
       },
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5841.19
+        "latency_ms": 5926.86
       }
     ],
     "bjcucc": [
       {
         "ip": "111.193.235.246:8888",
         "multicast": "239.3.1.238:8001",
-        "latency_ms": 1848.42
-      }
-    ],
-    "scctcc": [
-      {
-        "ip": "171.213.155.205:9100",
-        "multicast": "239.94.0.60:5140",
-        "latency_ms": 6510.83
+        "latency_ms": 6418.36
       }
     ],
     "gdctcc": [
       {
+        "ip": "58.62.234.243:10000",
+        "multicast": "239.77.0.84:5146",
+        "latency_ms": 1776.41
+      },
+      {
         "ip": "183.30.202.85:8000",
         "multicast": "239.77.0.84:5146",
-        "latency_ms": 6400.96
+        "latency_ms": 1939.76
       }
     ]
   }
