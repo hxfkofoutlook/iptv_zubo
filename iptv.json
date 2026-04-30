@@ -1,33 +1,26 @@
 {
-  "update_time": "2026-04-29 23:01:25",
-  "update_timestamp": 1777503685,
-  "total_sources": 3,
-  "total_streams": 4,
+  "update_time": "2026-04-30 22:57:53",
+  "update_timestamp": 1777589873,
+  "total_sources": 2,
+  "total_streams": 3,
   "sources": {
-    "shctcc": [
-      {
-        "ip": "123.60.75.150:540",
-        "multicast": "233.18.204.51:5140",
-        "latency_ms": 3899.3
-      }
-    ],
     "bjctcc": [
-      {
-        "ip": "43.138.5.183:10001",
-        "multicast": "225.1.8.36:8002",
-        "latency_ms": 5755.63
-      },
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 6043.95
+        "latency_ms": 5822.8
+      },
+      {
+        "ip": "43.138.5.183:10001",
+        "multicast": "225.1.8.36:8002",
+        "latency_ms": 5828.68
       }
     ],
     "gdctcc": [
       {
         "ip": "58.62.234.243:10000",
         "multicast": "239.77.0.84:5146",
-        "latency_ms": 2177.18
+        "latency_ms": 7245.63
       }
     ]
   }
