@@ -1,6 +1,6 @@
 {
-  "update_time": "2026-05-31 23:04:40",
-  "update_timestamp": 1780268680,
+  "update_time": "2026-06-01 23:42:03",
+  "update_timestamp": 1780357323,
   "total_sources": 2,
   "total_streams": 2,
   "sources": {
@@ -8,14 +8,14 @@
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 6052.66
+        "latency_ms": 6017.17
       }
     ],
     "hecucc": [
       {
         "ip": "110.249.126.15:9999",
         "multicast": "239.253.92.154:6011",
-        "latency_ms": 6808.82
+        "latency_ms": 6132.13
       }
     ]
   }
