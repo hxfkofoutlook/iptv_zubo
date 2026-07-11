@@ -1,6 +1,6 @@
 {
-  "update_time": "2026-07-10 23:03:01",
-  "update_timestamp": 1783724581,
+  "update_time": "2026-07-11 22:54:54",
+  "update_timestamp": 1783810494,
   "total_sources": 2,
   "total_streams": 3,
   "sources": {
@@ -8,19 +8,19 @@
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5801.23
+        "latency_ms": 5714.15
       },
       {
         "ip": "43.138.5.183:10001",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 6214.29
+        "latency_ms": 6427.04
       }
     ],
     "hecucc": [
       {
         "ip": "120.7.170.177:4000",
         "multicast": "239.253.92.154:6011",
-        "latency_ms": 15296.81
+        "latency_ms": 14920.08
       }
     ]
   }
