@@ -1,7 +1,20 @@
 {
-  "update_time": "2026-07-18 22:54:58",
-  "update_timestamp": 1784415298,
-  "total_sources": 0,
-  "total_streams": 0,
-  "sources": {}
+  "update_time": "2026-07-19 22:57:53",
+  "update_timestamp": 1784501873,
+  "total_sources": 1,
+  "total_streams": 2,
+  "sources": {
+    "bjctcc": [
+      {
+        "ip": "192.144.185.155:6000",
+        "multicast": "225.1.8.36:8002",
+        "latency_ms": 5813.2
+      },
+      {
+        "ip": "43.138.5.183:10001",
+        "multicast": "225.1.8.36:8002",
+        "latency_ms": 6308.46
+      }
+    ]
+  }
 }
