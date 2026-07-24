@@ -1,19 +1,26 @@
 {
-  "update_time": "2026-07-23 23:00:52",
-  "update_timestamp": 1784847652,
-  "total_sources": 1,
-  "total_streams": 2,
+  "update_time": "2026-07-24 23:04:43",
+  "update_timestamp": 1784934283,
+  "total_sources": 2,
+  "total_streams": 3,
   "sources": {
     "bjctcc": [
       {
         "ip": "192.144.185.155:6000",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 5768.84
+        "latency_ms": 5857.36
       },
       {
         "ip": "43.138.5.183:10001",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 6194.95
+        "latency_ms": 6172.5
+      }
+    ],
+    "gdctcc": [
+      {
+        "ip": "183.30.202.85:8000",
+        "multicast": "239.77.0.84:5146",
+        "latency_ms": 6217.71
       }
     ]
   }
