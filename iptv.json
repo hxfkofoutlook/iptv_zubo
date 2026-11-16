@@ -1,6 +1,6 @@
 {
-  "update_time": "2026-11-15 01:35:13",
-  "update_timestamp": 1794706513,
+  "update_time": "2026-11-16 01:39:27",
+  "update_timestamp": 1794793167,
   "total_sources": 1,
   "total_streams": 1,
   "sources": {
@@ -8,7 +8,7 @@
       {
         "ip": "43.138.5.183:10001",
         "multicast": "225.1.8.36:8002",
-        "latency_ms": 6859.42
+        "latency_ms": 5710.57
       }
     ]
   }
